@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: gm7-dashboard
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: SIGNAGE_TOKEN
+        sync: false
+      - key: ANTHROPIC_KEY
+        sync: false

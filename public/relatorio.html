@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>GM7 NOC — Relatório</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08080a;--s1:#0e0e12;--s2:#151519;--s3:#1c1c22;--s4:#242430;
+  --border:rgba(255,255,255,.06);--border2:rgba(255,255,255,.12);
+  --tx:#ededf0;--tx2:#b0b0bc;--mu:#5a5a68;--mu2:#76768a;
+  --grn:#00D68F;--grn-bg:rgba(0,214,143,.10);--grn-t:#5EEDB8;--grn-glow:rgba(0,214,143,.35);
+  --red:#FF4757;--red-bg:rgba(255,71,87,.12);--red-t:#FF8A94;--red-glow:rgba(255,71,87,.4);
+  --amb:#FFBE21;--amb-bg:rgba(255,190,33,.10);--amb-t:#FFD56B;--amb-glow:rgba(255,190,33,.35);
+  --blu:#3B86F7;--blu-bg:rgba(59,134,247,.10);--blu-t:#7FB3FA;
+  --r:10px;--rs:6px;
+}
+html,body{min-height:100%;background:var(--bg);color:var(--tx);font-family:'SF Pro Display',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--s4);border-radius:3px}
+
+/* Top bar */
+.top{display:flex;align-items:center;padding:10px 20px;border-bottom:1px solid var(--border);background:var(--s1);gap:10px;flex-wrap:wrap;position:sticky;top:0;z-index:50}
+.top-brand{display:flex;align-items:center;gap:8px}
+.top-brand svg{width:26px;height:26px}
+.top-brand h1{font-size:14px;font-weight:600;letter-spacing:-.02em}
+.top-brand h1 span{color:var(--mu2);font-weight:400}
+.top-sub{font-size:10px;color:var(--mu2);border-left:1px solid var(--border2);padding-left:10px}
+.top-actions{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap;align-items:center}
+.tbtn{font-size:10px;padding:5px 12px;border-radius:var(--rs);border:1px solid var(--border2);background:var(--s2);color:var(--tx2);cursor:pointer;display:flex;align-items:center;gap:4px;white-space:nowrap;transition:all .15s;text-decoration:none}
+.tbtn:hover{background:var(--s3);color:var(--tx)}
+.tbtn.prim{background:var(--blu-bg);color:var(--blu-t);border-color:rgba(59,134,247,.3)}
+.tbtn.prim:hover{background:rgba(59,134,247,.2)}
+#loadingBadge{font-size:10px;color:var(--mu2);display:flex;align-items:center;gap:6px}
+.spr{width:10px;height:10px;border:2px solid var(--border2);border-top-color:var(--mu);border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* Body */
+.body{padding:20px;max-width:1400px;margin:0 auto}
+
+/* Filters row */
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px;background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px}
+.flbl{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--mu);margin-right:2px}
+.fsel{font-size:11px;padding:5px 10px;border-radius:var(--rs);border:1px solid var(--border2);background:var(--s2);color:var(--tx);outline:none;cursor:pointer}
+.fsel:focus{border-color:var(--blu)}
+.sinp{font-size:11px;padding:5px 10px;border-radius:var(--rs);border:1px solid var(--border2);background:var(--s2);color:var(--tx);outline:none;min-width:200px}
+.sinp:focus{border-color:var(--blu)}
+.sinp::placeholder{color:var(--mu)}
+.fsep{width:1px;height:18px;background:var(--border2);margin:0 4px}
+
+/* Metrics */
+.metrics{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.met{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;flex:1;min-width:100px;position:relative;overflow:hidden}
+.met .lb{font-size:8px;color:var(--mu);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.met .vl{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}
+.met .vl.g{color:var(--grn-t)}.met .vl.r{color:var(--red-t)}.met .vl.a{color:var(--amb-t)}.met .vl.b{color:var(--blu-t)}
+.met .pct{font-size:10px;color:var(--mu2);margin-top:3px}
+.met .bar{position:absolute;bottom:0;left:0;height:3px;border-radius:0 2px 0 0;transition:width .6s}
+
+/* Table */
+.tbl-wrap{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.tbl-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border)}
+.tbl-title{font-size:12px;font-weight:600}
+.tbl-count{font-size:10px;color:var(--mu2)}
+table{width:100%;border-collapse:collapse}
+thead tr{border-bottom:1px solid var(--border)}
+th{padding:8px 12px;text-align:left;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--mu);white-space:nowrap}
+th.r{text-align:right}
+tbody tr{border-bottom:1px solid var(--border);cursor:default;transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--s2)}
+tbody tr.crit{border-left:3px solid var(--red);background:rgba(255,71,87,.03)}
+tbody tr.warn{border-left:3px solid var(--amb)}
+td{padding:7px 12px;font-size:11px;vertical-align:middle}
+td.r{text-align:right}
+td.muted{color:var(--mu2)}
+
+/* Pills */
+.pill{font-size:9px;font-weight:500;padding:2px 8px;border-radius:20px;white-space:nowrap;display:inline-block}
+.pill.on{background:var(--grn-bg);color:var(--grn-t)}
+.pill.ow{background:var(--amb-bg);color:var(--amb-t)}
+.pill.oc{background:var(--red-bg);color:var(--red-t)}
+.pill.sok{background:var(--blu-bg);color:var(--blu-t)}
+.pill.sno{background:var(--amb-bg);color:var(--amb-t)}
+.pill.lok{background:rgba(255,255,255,.04);color:var(--mu2)}
+.pill.lno{background:var(--red-bg);color:var(--red-t)}
+
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0}
+.dot.on{background:var(--grn);box-shadow:0 0 4px var(--grn-glow)}
+.dot.ow{background:var(--amb)}
+.dot.oc{background:var(--red);box-shadow:0 0 5px var(--red-glow)}
+
+.empty{color:var(--mu);font-size:12px;padding:40px;text-align:center}
+.spin-wrap{display:flex;align-items:center;justify-content:center;gap:8px;color:var(--mu);font-size:12px;padding:40px}
+
+/* Print */
+@media print{
+  @page{margin:12mm;size:A4}
+  body{background:#fff!important;color:#111!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .top,.filters,.no-print{display:none!important}
+  .body{padding:0;max-width:100%}
+  .metrics{gap:6px}
+  .met{background:#f5f5f8!important;border-color:#ddd!important;color:#111!important}
+  .met .lb{color:#666!important}
+  .met .vl.g{color:#00875A!important}.met .vl.r{color:#D32F2F!important}.met .vl.a{color:#C68A00!important}.met .vl.b{color:#2563EB!important}
+  .met .pct{color:#888!important}
+  .tbl-wrap{border-color:#ddd!important;background:#fff!important}
+  .tbl-head{border-color:#ddd!important}
+  .tbl-title{color:#111!important}
+  th{color:#555!important;background:#f5f5f8!important}
+  tbody tr{border-color:#eee!important}
+  tbody tr:hover{background:transparent!important}
+  tbody tr.crit{background:#fff5f5!important;border-color:#ffcdd2!important}
+  tbody tr.warn{background:#fffde7!important;border-color:#ffe082!important}
+  td{color:#111!important}
+  td.muted{color:#777!important}
+  .pill.on{background:#e8f5e9!important;color:#2e7d32!important}
+  .pill.ow{background:#fffde7!important;color:#c68a00!important}
+  .pill.oc{background:#ffebee!important;color:#c62828!important}
+  .pill.sok{background:#e3f0ff!important;color:#1a56c4!important}
+  .pill.sno{background:#fff8e1!important;color:#b27600!important}
+  .pill.lok{background:#f5f5f5!important;color:#666!important}
+  .pill.lno{background:#ffebee!important;color:#c62828!important}
+  .print-header{display:block!important}
+}
+.print-header{display:none;text-align:center;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #3B86F7}
+.print-header h2{font-size:18px;font-weight:700;color:#111}
+.print-header p{font-size:11px;color:#666;margin-top:4px}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="top-brand">
+    <svg viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="6" fill="#3B86F7" fill-opacity=".15"/><path d="M7 14h4l3-6 4 12 3-6h4" stroke="#3B86F7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <h1>GM7 <span>NOC</span></h1>
+  </div>
+  <div class="top-sub">📋 Relatório de Players</div>
+  <div id="loadingBadge" style="display:none"><div class="spr"></div><span>Carregando...</span></div>
+  <div class="top-actions no-print">
+    <span id="lastUpdate" style="font-size:10px;color:var(--mu2)"></span>
+    <button class="tbtn" onclick="loadData()">↻ Atualizar</button>
+    <button class="tbtn prim" onclick="window.print()">🖨 Imprimir / PDF</button>
+    <button class="tbtn prim" onclick="downloadExcel()">📊 Excel</button>
+    <a class="tbtn" href="/">← Dashboard</a>
+  </div>
+</div>
+
+<div class="body">
+
+  <!-- Print-only header -->
+  <div class="print-header">
+    <h2>GM7 NOC — Relatório de Players</h2>
+    <p id="printMeta"></p>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters no-print">
+    <span class="flbl">Filtros</span>
+    <input class="sinp" id="fSearch" placeholder="Buscar player, organização, cidade..." oninput="applyFilters()"/>
+    <div class="fsep"></div>
+    <span class="flbl">Cliente</span>
+    <select class="fsel" id="fClient" onchange="applyFilters()">
+      <option value="all">Todos</option>
+    </select>
+    <div class="fsep"></div>
+    <span class="flbl">Status</span>
+    <select class="fsel" id="fStatus" onchange="applyFilters()">
+      <option value="all">Todos</option>
+      <option value="on">Online</option>
+      <option value="ow">Offline &lt;7d</option>
+      <option value="oc">Offline &gt;7d</option>
+    </select>
+    <div class="fsep"></div>
+    <span class="flbl">Sync</span>
+    <select class="fsel" id="fSync" onchange="applyFilters()">
+      <option value="all">Todos</option>
+      <option value="ok">Atualizado</option>
+      <option value="no">Desatualizado</option>
+    </select>
+    <div class="fsep"></div>
+    <span class="flbl">Licença</span>
+    <select class="fsel" id="fLic" onchange="applyFilters()">
+      <option value="all">Todas</option>
+      <option value="ok">Ativa</option>
+      <option value="no">Não Ativa</option>
+    </select>
+    <div class="fsep"></div>
+    <span class="flbl">Ordenar</span>
+    <select class="fsel" id="fSort" onchange="applyFilters()">
+      <option value="severity">Severidade</option>
+      <option value="name">Nome A→Z</option>
+      <option value="org">Organização</option>
+      <option value="offline_desc">Mais tempo offline</option>
+      <option value="sync_desc">Mais desatualizados</option>
+    </select>
+  </div>
+
+  <!-- Metrics -->
+  <div class="metrics" id="metrics">
+    <div class="met"><div class="lb">Total</div><div class="vl b" id="mTot">—</div><div class="pct" id="mTotP"></div><div class="bar" style="width:100%;background:var(--blu);opacity:.2"></div></div>
+    <div class="met"><div class="lb">Online</div><div class="vl g" id="mOn">—</div><div class="pct" id="mOnP"></div><div class="bar" id="mOnB" style="width:0;background:var(--grn)"></div></div>
+    <div class="met"><div class="lb">Offline &lt;7d</div><div class="vl a" id="mW">—</div><div class="pct" id="mWP"></div><div class="bar" id="mWB" style="width:0;background:var(--amb)"></div></div>
+    <div class="met"><div class="lb">Offline &gt;7d</div><div class="vl r" id="mC">—</div><div class="pct" id="mCP"></div><div class="bar" id="mCB" style="width:0;background:var(--red)"></div></div>
+    <div class="met"><div class="lb">Desatualizado</div><div class="vl a" id="mDs">—</div><div class="pct" id="mDsP"></div><div class="bar" id="mDsB" style="width:0;background:var(--amb)"></div></div>
+    <div class="met"><div class="lb">Lic. Vencida</div><div class="vl r" id="mLv">—</div><div class="pct" id="mLvP"></div><div class="bar" id="mLvB" style="width:0;background:var(--red)"></div></div>
+  </div>
+
+  <!-- Table -->
+  <div class="tbl-wrap">
+    <div class="tbl-head">
+      <span class="tbl-title">Players</span>
+      <span class="tbl-count" id="tblCount"></span>
+    </div>
+    <div id="tableArea">
+      <div class="spin-wrap"><div class="spr"></div>Carregando dados...</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+var ALL = [], filtered = [];
+
+function oc(p) {
+  return p.isConnected ? 'on' : (p.diasOffline == null || p.diasOffline < 7) ? 'ow' : 'oc';
+}
+
+function ago(d, c) {
+  if (c) return 'agora';
+  if (d === 0) return 'hoje';
+  if (d === 1) return '1d';
+  return d != null ? d + 'd' : '—';
+}
+
+function pct(n, t) {
+  return t ? Math.round(n / t * 100) + '%' : '0%';
+}
+
+function severity(p) {
+  var o = oc(p);
+  return o === 'oc' ? 0 + (p.diasOffline != null ? 1000 - Math.min(p.diasOffline, 999) : 500) : o === 'ow' ? 2000 : 3000;
+}
+
+function loadData() {
+  document.getElementById('loadingBadge').style.display = 'flex';
+  document.getElementById('tableArea').innerHTML = '<div class="spin-wrap"><div class="spr"></div>Carregando dados...</div>';
+  fetch('/players').then(function(r) { return r.json(); }).then(function(d) {
+    document.getElementById('loadingBadge').style.display = 'none';
+    if (d.error) throw new Error(d.error);
+    if (d.loading || !d.players || !d.players.length) {
+      document.getElementById('tableArea').innerHTML = '<div class="empty">Carregando dados do servidor, aguarde...</div>';
+      setTimeout(loadData, 4000);
+      return;
+    }
+    ALL = d.players.filter(function(p) { return p.tipo !== 'Afiliado'; });
+    var ts = new Date(d.fetchedAt).toLocaleString('pt-BR');
+    document.getElementById('lastUpdate').textContent = 'Atualizado: ' + ts;
+    document.getElementById('printMeta').textContent = 'Gerado em: ' + new Date().toLocaleString('pt-BR') + ' · ' + ALL.length + ' players';
+    buildClientDropdown();
+    applyFilters();
+  }).catch(function(e) {
+    document.getElementById('loadingBadge').style.display = 'none';
+    document.getElementById('tableArea').innerHTML = '<div class="empty">Erro ao carregar: ' + e.message + '</div>';
+  });
+}
+
+function buildClientDropdown() {
+  var sel = document.getElementById('fClient');
+  var prev = sel.value;
+  var m = {}, a = [];
+  for (var i = 0; i < ALL.length; i++) {
+    var n = ALL[i].orgName;
+    if (!m[n]) { m[n] = 0; a.push(n); }
+    m[n]++;
+  }
+  a.sort();
+  sel.innerHTML = '<option value="all">Todos os clientes (' + ALL.length + ')</option>';
+  for (var j = 0; j < a.length; j++) {
+    sel.innerHTML += '<option value="' + a[j].replace(/"/g, '&quot;') + '">' + a[j] + ' (' + m[a[j]] + ')</option>';
+  }
+  if (prev && prev !== 'all') sel.value = prev;
+}
+
+function getFiltered() {
+  var s = document.getElementById('fSearch').value.toLowerCase();
+  var client = document.getElementById('fClient').value;
+  var st = document.getElementById('fStatus').value;
+  var sy = document.getElementById('fSync').value;
+  var lc = document.getElementById('fLic').value;
+  var sort = document.getElementById('fSort').value;
+  var list = [];
+  for (var i = 0; i < ALL.length; i++) {
+    var p = ALL[i], o = oc(p);
+    if (client !== 'all' && p.orgName !== client) continue;
+    if (st !== 'all' && o !== st) continue;
+    if (sy !== 'all') { if (sy === 'ok' && p.statusSync !== 'Atualizado') continue; if (sy === 'no' && p.statusSync !== 'Desatualizado') continue; }
+    if (lc !== 'all') { if (lc === 'ok' && p.licencaAtiva !== 'Ativa') continue; if (lc === 'no' && p.licencaAtiva !== 'Não Ativa') continue; }
+    if (s) {
+      var fs = [p.playerName, p.orgName, p.segmento, p.cidadeUF, p.bairro], ok = false;
+      for (var f = 0; f < fs.length; f++) { if (fs[f] && fs[f].toLowerCase().indexOf(s) !== -1) { ok = true; break; } }
+      if (!ok) continue;
+    }
+    list.push(p);
+  }
+  if (sort === 'severity') list.sort(function(a, b) { return severity(a) - severity(b); });
+  else if (sort === 'name') list.sort(function(a, b) { return a.playerName.localeCompare(b.playerName); });
+  else if (sort === 'org') list.sort(function(a, b) { return a.orgName.localeCompare(b.orgName); });
+  else if (sort === 'offline_desc') list.sort(function(a, b) { return (b.diasOffline != null ? b.diasOffline : -1) - (a.diasOffline != null ? a.diasOffline : -1); });
+  else if (sort === 'sync_desc') list.sort(function(a, b) { return (b.diasDesatualizado != null ? b.diasDesatualizado : -1) - (a.diasDesatualizado != null ? a.diasDesatualizado : -1); });
+  return list;
+}
+
+function updMetrics(list) {
+  var t = list.length, on = 0, w = 0, cr = 0, ds = 0, lv = 0;
+  for (var i = 0; i < t; i++) {
+    var o = oc(list[i]);
+    if (o === 'on') on++; else if (o === 'ow') w++; else cr++;
+    if (list[i].statusSync === 'Desatualizado') ds++;
+    if (list[i].licencaAtiva === 'Não Ativa') lv++;
+  }
+  document.getElementById('mTot').textContent = t;
+  document.getElementById('mOn').textContent = on; document.getElementById('mOnP').textContent = pct(on, t); document.getElementById('mOnB').style.width = pct(on, t);
+  document.getElementById('mW').textContent = w; document.getElementById('mWP').textContent = pct(w, t); document.getElementById('mWB').style.width = pct(w, t);
+  document.getElementById('mC').textContent = cr; document.getElementById('mCP').textContent = pct(cr, t); document.getElementById('mCB').style.width = pct(cr, t);
+  document.getElementById('mDs').textContent = ds; document.getElementById('mDsP').textContent = pct(ds, t); document.getElementById('mDsB').style.width = pct(ds, t);
+  document.getElementById('mLv').textContent = lv; document.getElementById('mLvP').textContent = pct(lv, t); document.getElementById('mLvB').style.width = pct(lv, t);
+}
+
+function renderTable(list) {
+  document.getElementById('tblCount').textContent = list.length + ' player' + (list.length !== 1 ? 's' : '');
+  if (!list.length) {
+    document.getElementById('tableArea').innerHTML = '<div class="empty">Nenhum player encontrado.</div>';
+    return;
+  }
+  var h = '<table><thead><tr>'
+    + '<th>#</th>'
+    + '<th>Player</th>'
+    + '<th>Organização</th>'
+    + '<th>Cidade / UF</th>'
+    + '<th>Tipo</th>'
+    + '<th>Status</th>'
+    + '<th>Sync</th>'
+    + '<th>Licença</th>'
+    + '<th class="r">Offline</th>'
+    + '</tr></thead><tbody>';
+  for (var i = 0; i < list.length; i++) {
+    var p = list[i], o = oc(p);
+    var a = ago(p.diasOffline, p.isConnected);
+    var stLbl = o === 'on' ? 'Online' : 'Offline';
+    var sc = p.statusSync === 'Atualizado' ? 'sok' : 'sno';
+    var lc = p.licencaAtiva === 'Ativa' ? 'lok' : 'lno';
+    var rowCls = o === 'oc' ? 'crit' : o === 'ow' ? 'warn' : '';
+    var cidade = p.cidadeUF || (p.bairro ? p.bairro : '—');
+    h += '<tr class="' + rowCls + '">'
+      + '<td class="muted">' + (i + 1) + '</td>'
+      + '<td><strong>' + p.playerName + '</strong></td>'
+      + '<td>' + p.orgName + '</td>'
+      + '<td class="muted">' + cidade + '</td>'
+      + '<td class="muted">' + (p.tipo || '—') + '</td>'
+      + '<td><span class="pill ' + o + '">' + stLbl + (o !== 'on' ? ' · ' + a : '') + '</span></td>'
+      + '<td><span class="pill ' + sc + '">' + (p.statusSync || '—') + '</span></td>'
+      + '<td><span class="pill ' + lc + '">' + (p.licencaAtiva || '—') + '</span></td>'
+      + '<td class="r muted">' + (o !== 'on' ? a : '—') + '</td>'
+      + '</tr>';
+  }
+  h += '</tbody></table>';
+  document.getElementById('tableArea').innerHTML = h;
+}
+
+function applyFilters() {
+  var list = getFiltered();
+  updMetrics(list);
+  renderTable(list);
+}
+
+loadData();
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+function downloadExcel(){
+  if(!ALL.length){alert('Aguarde o carregamento dos dados.');return;}
+  var list=getFiltered();
+  if(!list.length){alert('Nenhum player para exportar com os filtros atuais.');return;}
+
+  var now=new Date();
+  var dateStr=now.toLocaleDateString('pt-BR').replace(/\//g,'-');
+  var clientVal=document.getElementById('fClient').value;
+  var clientLabel=clientVal!=='all'?clientVal:'Todos';
+
+  function oc2(p){return p.isConnected?'on':(p.diasOffline==null||p.diasOffline<7)?'ow':'oc';}
+
+  // ── Aba Players ──
+  var playersData=[['#','Player','Organização','Cidade/UF','Tipo','Status','Dias Offline','Sync','Licença']];
+  for(var i=0;i<list.length;i++){
+    var p=list[i],o=oc2(p);
+    var st=o==='on'?'Online':o==='ow'?'Offline <7d':'Offline >7d';
+    playersData.push([i+1,p.playerName,p.orgName,p.cidadeUF||p.bairro||'—',p.tipo||'—',st,o!=='on'?(p.diasOffline!=null?p.diasOffline:0):0,p.statusSync||'—',p.licencaAtiva||'—']);
+  }
+
+  // ── Aba Resumo por Organização ──
+  var orgMap={};
+  for(var j=0;j<list.length;j++){
+    var p2=list[j],o2=oc2(p2),org=p2.orgName;
+    if(!orgMap[org])orgMap[org]={total:0,online:0,offWarn:0,offCrit:0,desat:0,licVenc:0};
+    orgMap[org].total++;
+    if(o2==='on')orgMap[org].online++;else if(o2==='ow')orgMap[org].offWarn++;else orgMap[org].offCrit++;
+    if(p2.statusSync==='Desatualizado')orgMap[org].desat++;
+    if(p2.licencaAtiva==='Não Ativa')orgMap[org].licVenc++;
+  }
+  var orgs=Object.keys(orgMap).sort(function(a,b){return orgMap[b].offCrit-orgMap[a].offCrit;});
+  var resumoData=[['#','Organização','Total','Online','Off <7d','Off >7d','Desatualizado','Lic. Vencida','% Online']];
+  for(var k=0;k<orgs.length;k++){
+    var og=orgMap[orgs[k]];
+    resumoData.push([k+1,orgs[k],og.total,og.online,og.offWarn,og.offCrit,og.desat,og.licVenc,og.total?Math.round(og.online/og.total*100)+'%':'0%']);
+  }
+
+  // ── Aba Críticos ──
+  var criticos=list.filter(function(p){return oc2(p)==='oc';}).sort(function(a,b){return(b.diasOffline||0)-(a.diasOffline||0);});
+  var criticosData=[['#','Player','Organização','Cidade/UF','Tipo','Dias Offline','Sync','Licença']];
+  for(var m=0;m<criticos.length;m++){
+    var cp=criticos[m];
+    criticosData.push([m+1,cp.playerName,cp.orgName,cp.cidadeUF||'—',cp.tipo||'—',cp.diasOffline!=null?cp.diasOffline:0,cp.statusSync||'—',cp.licencaAtiva||'—']);
+  }
+
+  var wb=XLSX.utils.book_new();
+
+  function makeSheet(data,sheetName,hColor){
+    var ws=XLSX.utils.aoa_to_sheet(data);
+    ws['!cols']=data[0].map(function(_,ci){return{wch:ci===1||ci===2?30:ci===3?20:14};});
+    for(var c=0;c<data[0].length;c++){
+      var addr=XLSX.utils.encode_cell({r:0,c:c});
+      if(!ws[addr])continue;
+      ws[addr].s={font:{bold:true,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:hColor}},alignment:{horizontal:'center'}};
+    }
+    XLSX.utils.book_append_sheet(wb,ws,sheetName);
+  }
+
+  makeSheet(playersData,'Players','185FA5');
+  makeSheet(resumoData,'Resumo por Org','1A6B3A');
+  makeSheet(criticosData,'Críticos','A32D2D');
+
+  // ── Aba Métricas ──
+  var t=list.length,on=0,w=0,cr=0,ds=0,lv=0;
+  for(var n=0;n<t;n++){var ox=oc2(list[n]);if(ox==='on')on++;else if(ox==='ow')w++;else cr++;if(list[n].statusSync==='Desatualizado')ds++;if(list[n].licencaAtiva==='Não Ativa')lv++;}
+  var metData=[
+    ['Métrica','Quantidade','Percentual'],
+    ['Total de Players',t,'100%'],
+    ['Online',on,t?Math.round(on/t*100)+'%':'0%'],
+    ['Offline <7d',w,t?Math.round(w/t*100)+'%':'0%'],
+    ['Offline >7d (Críticos)',cr,t?Math.round(cr/t*100)+'%':'0%'],
+    ['Desatualizado',ds,t?Math.round(ds/t*100)+'%':'0%'],
+    ['Licença Vencida',lv,t?Math.round(lv/t*100)+'%':'0%'],
+    ['','',''],
+    ['Gerado em',now.toLocaleString('pt-BR'),''],
+    ['Cliente / Filtro',clientLabel,'']
+  ];
+  var wsm=XLSX.utils.aoa_to_sheet(metData);
+  wsm['!cols']=[{wch:28},{wch:16},{wch:14}];
+  XLSX.utils.book_append_sheet(wb,wsm,'Métricas');
+
+  XLSX.writeFile(wb,'GM7_NOC_Relatorio_'+clientLabel+'_'+dateStr+'.xlsx');
+}
+</script>
+</body>
+</html>
