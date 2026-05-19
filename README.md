@@ -1,6 +1,6 @@
 # GM7 Signage Dashboard
 
-Dashboard de monitoramento de players com assistente IA integrado.
+Dashboard de monitoramento de players com assistente IA integrado
 
 ---
 
