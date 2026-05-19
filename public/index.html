@@ -433,31 +433,201 @@ body{
 .pill.lno{background:var(--red-bg);color:var(--red-t)}
 .pills{display:flex;gap:4px;flex-wrap:wrap}
 
-/* ═══ CHARTS ═══ */
+/* ═══ CHARTS (modo rotação tela cheia) ═══ */
 .charts-full{
-  flex:1;overflow-y:auto;padding:var(--sp4);
-  display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;
-  gap:var(--sp4);min-height:0;
+  flex:1;overflow:hidden;
+  display:flex;flex-direction:column;min-height:0;
 }
-.ch-card{
+
+/* Barra de controles */
+.ch-ctrl{
+  display:flex;align-items:center;gap:var(--sp3);
+  padding:var(--sp4) var(--sp5);
+  border-bottom:1px solid var(--border);
+  background:var(--s1);flex-wrap:wrap;flex-shrink:0;
+}
+.ch-ctrl-lbl{
+  font-size:var(--fs-xs);color:var(--mu);
+  text-transform:uppercase;letter-spacing:.08em;font-weight:600;
+}
+
+/* Dropdown seletor de gráfico */
+.ch-dd{position:relative;min-width:280px}
+.ch-dd-btn{
+  width:100%;padding:10px 14px;border-radius:var(--r);
+  border:1px solid rgba(59,134,247,.40);
+  background:var(--blu-bg);color:var(--tx);
+  font-size:var(--fs-lg);cursor:pointer;font-family:inherit;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  transition:all .15s;
+}
+.ch-dd-btn:hover{border-color:var(--blu)}
+.ch-dd-label{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+.ch-dd-num{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:22px;height:22px;border-radius:5px;
+  background:rgba(59,134,247,.20);color:var(--blu-t);
+  font-size:var(--fs-sm);font-weight:600;
+  font-variant-numeric:tabular-nums;flex-shrink:0;
+}
+.ch-dd-name{
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  text-align:left;
+}
+.ch-dd-caret{font-size:14px;color:var(--mu2);transition:transform .2s}
+.ch-dd.open .ch-dd-caret{transform:rotate(180deg)}
+
+.ch-dd-menu{
+  position:absolute;top:calc(100% + 6px);left:0;right:0;
+  background:var(--s2);border:1px solid var(--border2);
+  border-radius:var(--r-lg);padding:6px;z-index:50;
+  box-shadow:0 12px 32px rgba(0,0,0,.4);
+  display:none;
+}
+.ch-dd.open .ch-dd-menu{display:block}
+.ch-dd-item{
+  display:flex;align-items:center;gap:10px;
+  width:100%;padding:9px 12px;border-radius:var(--r-sm);
+  border:none;background:transparent;color:var(--tx2);
+  font-size:var(--fs-md);cursor:pointer;font-family:inherit;
+  text-align:left;
+}
+.ch-dd-item:hover{background:var(--s3);color:var(--tx)}
+.ch-dd-item.act{background:var(--blu-bg);color:var(--blu-t)}
+.ch-dd-item.act .ch-dd-num{background:rgba(59,134,247,.20)}
+.ch-dd-item-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ch-dd-item-check{font-size:14px;display:none}
+.ch-dd-item.act .ch-dd-item-check{display:inline}
+
+/* Setas de navegação */
+.ch-nav-btn{
+  width:34px;height:34px;border-radius:var(--r-sm);
+  border:1px solid var(--border2);background:var(--s2);color:var(--tx2);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:14px;transition:all .15s;font-family:inherit;
+}
+.ch-nav-btn:hover{background:var(--s3);color:var(--tx);border-color:rgba(255,255,255,.18)}
+[data-theme="light"] .ch-nav-btn:hover{border-color:rgba(0,0,0,.18)}
+
+/* Indicador de rotação */
+.ch-rot{
+  margin-left:auto;
+  display:flex;align-items:center;gap:10px;
+  padding:6px 14px 6px 8px;border-radius:var(--r);
+  border:1px solid var(--border2);background:var(--s2);
+  transition:all .2s;
+}
+.ch-rot.on{
+  border-color:rgba(0,214,143,.25);
+  background:rgba(0,214,143,.08);
+}
+.ch-rot-btn{
+  width:28px;height:28px;border-radius:var(--r-sm);
+  border:none;background:var(--s3);color:var(--tx2);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:12px;transition:all .15s;
+}
+.ch-rot.on .ch-rot-btn{background:rgba(0,214,143,.20);color:var(--grn-t)}
+.ch-rot-txt{display:flex;flex-direction:column;line-height:1.15}
+.ch-rot-txt-1{font-size:var(--fs-md);color:var(--tx2);font-weight:500}
+.ch-rot.on .ch-rot-txt-1{color:var(--grn-t)}
+.ch-rot-txt-2{font-size:var(--fs-xs);color:var(--mu2)}
+
+/* Área principal do gráfico */
+.ch-stage{
+  flex:1;display:flex;flex-direction:column;
+  padding:var(--sp5) var(--sp6) var(--sp4);
+  min-height:0;overflow:hidden;
+}
+.ch-head{margin-bottom:var(--sp4);flex-shrink:0}
+.ch-title{
+  font-size:var(--fs-2xl);font-weight:600;
+  letter-spacing:-.01em;color:var(--tx);line-height:1.2;
+}
+.ch-desc{font-size:var(--fs-md);color:var(--mu2);margin-top:5px}
+
+/* Corpo: gráfico + legendas laterais */
+.ch-body{
+  flex:1;display:grid;
+  grid-template-columns:1fr 320px;gap:var(--sp6);
+  align-items:center;min-height:0;overflow:hidden;
+}
+.ch-body.wide{grid-template-columns:1fr}
+.ch-canvas-wrap{
+  position:relative;flex:1;min-height:0;height:100%;
+  display:flex;align-items:center;justify-content:center;
+}
+.ch-canvas-wrap canvas{max-height:100%}
+.ch-donut-center{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  pointer-events:none;
+}
+.ch-donut-num{
+  font-size:var(--fs-num-lg);font-weight:600;
+  font-variant-numeric:tabular-nums;line-height:1;
+  letter-spacing:-.02em;color:var(--tx);
+}
+.ch-donut-lbl{
+  font-size:var(--fs-sm);color:var(--mu);
+  letter-spacing:.08em;margin-top:6px;text-transform:uppercase;
+}
+
+/* Cards de legenda lateral (para gráficos donut/segmentos) */
+.ch-leg{display:flex;flex-direction:column;gap:var(--sp3);min-width:0}
+.ch-leg-card{
   background:var(--s1);border:1px solid var(--border);
-  border-radius:var(--r-lg);padding:var(--sp4);
-  display:flex;flex-direction:column;
+  border-radius:var(--r-lg);padding:var(--sp3) var(--sp4);
 }
-.ch-card.full{grid-column:1/-1}
-.ch-t{
-  font-size:var(--fs-xs);font-weight:600;
-  text-transform:uppercase;letter-spacing:.1em;
-  color:var(--mu);margin-bottom:var(--sp2);
+.ch-leg-card.g{background:var(--grn-bg);border-color:rgba(0,214,143,.20)}
+.ch-leg-card.a{background:var(--amb-bg);border-color:rgba(255,190,33,.18)}
+.ch-leg-card.r{background:var(--red-bg);border-color:rgba(255,71,87,.25)}
+.ch-leg-card.b{background:var(--blu-bg);border-color:rgba(59,134,247,.20)}
+.ch-leg-card.n{background:var(--s1);border-color:var(--border)}
+.ch-leg-top{display:flex;align-items:center;gap:9px;margin-bottom:5px}
+.ch-leg-dot{width:11px;height:11px;border-radius:3px;flex-shrink:0}
+.ch-leg-name{font-size:var(--fs-lg);font-weight:500;color:var(--tx2)}
+.ch-leg-card.g .ch-leg-name{color:var(--grn-t)}
+.ch-leg-card.a .ch-leg-name{color:var(--amb-t)}
+.ch-leg-card.r .ch-leg-name{color:var(--red-t)}
+.ch-leg-card.b .ch-leg-name{color:var(--blu-t)}
+.ch-leg-vals{display:flex;align-items:baseline;gap:10px}
+.ch-leg-num{
+  font-size:var(--fs-num-md);font-weight:600;
+  color:var(--tx);line-height:1;
+  font-variant-numeric:tabular-nums;
 }
-.ch-canvas{position:relative;flex:1;min-height:220px}
-.ch-canvas.short{min-height:160px}
-.leg{
-  display:flex;flex-wrap:wrap;gap:10px;
-  margin-bottom:var(--sp2);font-size:var(--fs-sm);color:var(--mu2);
+.ch-leg-card.r .ch-leg-num{color:var(--red-t)}
+.ch-leg-pct{font-size:var(--fs-md);color:var(--mu2);font-variant-numeric:tabular-nums}
+
+/* Indicadores embaixo */
+.ch-dots{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  padding:var(--sp4) var(--sp5) var(--sp3);
+  border-top:1px solid var(--border);flex-shrink:0;
 }
-.leg span{display:flex;align-items:center;gap:5px}
-.leg-d{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+.ch-dot{
+  width:22px;height:5px;border-radius:3px;
+  background:var(--s4);cursor:pointer;
+  border:none;padding:0;position:relative;overflow:hidden;
+  transition:background .15s,width .25s;
+}
+.ch-dot:hover{background:var(--mu)}
+.ch-dot.act{width:44px;background:var(--blu)}
+.ch-dot-progress{
+  position:absolute;inset:0;
+  background:rgba(255,255,255,.25);
+  width:0;
+}
+.ch-dot.act .ch-dot-progress.run{
+  animation:chDotFill 15s linear forwards;
+}
+@keyframes chDotFill{from{width:0}to{width:100%}}
+.ch-dots-count{
+  margin-left:14px;
+  font-size:var(--fs-sm);color:var(--mu);
+  font-variant-numeric:tabular-nums;
+}
 
 /* ═══ MAP ═══ */
 .map-wrap{flex:1;display:flex;flex-direction:column;min-height:0}
@@ -701,13 +871,18 @@ body{
   .metrics{grid-template-columns:1fr 1fr 1fr}
   .row{grid-template-columns:8px 1fr auto auto}
   .rago{display:none}
-  .charts-full{grid-template-columns:1fr}
+  .ch-body{grid-template-columns:1fr;gap:var(--sp4)}
+  .ch-leg{flex-direction:row;flex-wrap:wrap}
+  .ch-leg-card{flex:1;min-width:140px}
 }
 @media(max-width:700px){
   .side{display:none}
   .metrics{grid-template-columns:1fr 1fr;gap:var(--sp2)}
   .metrics .met:nth-child(n+5){display:none}
-  .charts-full{grid-template-columns:1fr}
+  .ch-body{grid-template-columns:1fr;gap:var(--sp3)}
+  .ch-stage{padding:var(--sp4) var(--sp4) var(--sp3)}
+  .ch-ctrl{padding:var(--sp3) var(--sp4)}
+  .ch-rot{margin-left:0;width:100%;order:99}
   .split{flex-direction:column}
   .split-l{flex:0 0 50%;border-right:none;border-bottom:1px solid var(--border)}
   .split-r{flex:1;min-width:0}
@@ -842,7 +1017,38 @@ body{
     </div>
 
     <div class="content" id="vMain"><div class="scroll" id="vScroll"><div id="grid"><div class="spin"><div class="spr"></div>Carregando...</div></div></div></div>
-    <div class="charts-full" id="vCharts" style="display:none"></div>
+    <div class="charts-full" id="vCharts" style="display:none">
+      <div class="ch-ctrl">
+        <span class="ch-ctrl-lbl">Visualizar</span>
+        <div class="ch-dd" id="chDd">
+          <button class="ch-dd-btn" onclick="toggleChartDd(event)" aria-label="Selecionar gráfico">
+            <span class="ch-dd-label">
+              <span class="ch-dd-num" id="chDdNum">1</span>
+              <span class="ch-dd-name" id="chDdName">Status Geral dos Players</span>
+            </span>
+            <span class="ch-dd-caret">▾</span>
+          </button>
+          <div class="ch-dd-menu" id="chDdMenu"></div>
+        </div>
+        <button class="ch-nav-btn" onclick="prevChart()" aria-label="Anterior">◀</button>
+        <button class="ch-nav-btn" onclick="nextChart()" aria-label="Próximo">▶</button>
+        <div class="ch-rot on" id="chRot">
+          <button class="ch-rot-btn" onclick="toggleChartRotation()" id="chRotBtn" aria-label="Pausar rotação">⏸</button>
+          <div class="ch-rot-txt">
+            <span class="ch-rot-txt-1" id="chRotTxt1">Rotação ativa</span>
+            <span class="ch-rot-txt-2">15s por gráfico</span>
+          </div>
+        </div>
+      </div>
+      <div class="ch-stage" id="chStage">
+        <div class="ch-head">
+          <div class="ch-title" id="chTitle">—</div>
+          <div class="ch-desc" id="chDesc">—</div>
+        </div>
+        <div class="ch-body" id="chBody"></div>
+      </div>
+      <div class="ch-dots" id="chDots"></div>
+    </div>
     <div class="map-wrap" id="vMap" style="display:none">
       <div id="map"></div>
       <div class="map-bar">
@@ -969,6 +1175,9 @@ body{
       <div class="kbd-row"><span>Buscar</span><span class="kbd">F</span></div>
       <div class="kbd-row"><span>Fechar painéis</span><span class="kbd">Esc</span></div>
       <div class="kbd-row"><span>Atualizar agora</span><span class="kbd">R</span></div>
+      <div class="kbd-row"><span>Gráfico anterior</span><span class="kbd">←</span></div>
+      <div class="kbd-row"><span>Próximo gráfico</span><span class="kbd">→</span></div>
+      <div class="kbd-row"><span>Pausar/retomar rotação</span><span class="kbd">Espaço</span></div>
     </div>
 
   </div>
@@ -1113,10 +1322,12 @@ function applyF(){
   else if(mode==='split'){renderSplitList(list);renderMap(list,'sec');}
 }
 function setMode(m){
+  // Se estava em charts e está saindo, parar a rotação
+  if(mode==='charts'&&m!=='charts')stopChartRotation();
   mode=m;['mList','mCards','mCharts','mMap','mSplit'].forEach(function(id){document.getElementById(id).classList.remove('act');});
   ({list:'mList',cards:'mCards',charts:'mCharts',map:'mMap',split:'mSplit'})[m]&&document.getElementById(({list:'mList',cards:'mCards',charts:'mCharts',map:'mMap',split:'mSplit'})[m]).classList.add('act');
   document.getElementById('vMain').style.display=(m==='list'||m==='cards')?'flex':'none';
-  document.getElementById('vCharts').style.display=m==='charts'?'grid':'none';
+  document.getElementById('vCharts').style.display=m==='charts'?'flex':'none';
   document.getElementById('vMap').style.display=m==='map'?'flex':'none';
   document.getElementById('vSplit').style.display=m==='split'?'flex':'none';
   if(m==='map'){setTimeout(function(){if(!lMap)initMap('map',1);else lMap.invalidateSize();renderMap(getF(),'main');},60);}
@@ -1133,54 +1344,299 @@ function renderGrid(list){
 }
 function renderSplitList(list){var el=document.getElementById('splitList');if(!el)return;var h='<div class="g-cards">';for(var i=0;i<list.length;i++){var p=list[i],o=oc(p),a=ago(p.diasOffline,p.isConnected),lbl=o==='on'?'Online':'Offline · '+a,idx=ALL.indexOf(p),cls=o==='oc'?'crit':o==='ow'?'warn':'';h+='<div class="card '+cls+'" onclick="openDw('+idx+')"><div class="card-top"><div class="dot '+o+'"></div><div class="card-name">'+p.playerName+'</div></div><div class="card-sub">'+p.orgName+'</div><div class="pills"><span class="pill '+o+'">'+lbl+'</span></div></div>';}h+='</div>';el.innerHTML=h;}
 
-// ─────── Charts ───────
+// ─────── Charts (rotação tela cheia) ───────
 var GR='rgba(255,255,255,.04)',TK='#5a5a68';
 function dc(id){if(chts[id]){chts[id].destroy();delete chts[id];}}
-function mkL(id,items){var el=document.getElementById(id);if(!el)return;var h='';for(var i=0;i<items.length;i++)h+='<span><span class="leg-d" style="background:'+items[i].c+'"></span>'+items[i].l+' '+items[i].v+'</span>';el.innerHTML=h;}
 
+// Estado da rotação
+var chartIdx=0,chartRotateOn=true,chartRotateTimer=null,chartLastList=[];
+var CHART_ROTATE_MS=15000;
+var CHART_RENDERERS=[];
+
+// Definição dos 6 gráficos
+var CHART_DEFS=[
+  {id:1,title:'Status Geral dos Players',desc:'Distribuição atual entre online, offline recente e offline crítico'},
+  {id:2,title:'Distribuição por Tipo',desc:'Players agrupados por categoria (PDM, DS, Outros)'},
+  {id:3,title:'Top 12 Segmentos',desc:'Maiores segmentos com presença de players ativos'},
+  {id:4,title:'Sync por Tipo',desc:'Players atualizados vs desatualizados, separados por tipo'},
+  {id:5,title:'Distribuição — Dias Offline',desc:'Quantos players estão offline há quanto tempo'},
+  {id:6,title:'Top 15 Organizações por Players Offline',desc:'Organizações com maior número de players desconectados'}
+];
+
+// Entry point chamado pelo applyF e setMode
 function renderCharts(list){
-  var el=document.getElementById('vCharts');
+  chartLastList=list;
+  buildChartDropdown();
+  buildChartDots();
+  showChart(chartIdx);
+  if(chartRotateOn&&mode==='charts')startChartRotation();
+}
+
+function buildChartDropdown(){
+  var menu=document.getElementById('chDdMenu');
+  if(!menu)return;
+  var h='';
+  for(var i=0;i<CHART_DEFS.length;i++){
+    var d=CHART_DEFS[i],act=i===chartIdx?'act':'';
+    h+='<button class="ch-dd-item '+act+'" onclick="selectChart('+i+')"><span class="ch-dd-num">'+(i+1)+'</span><span class="ch-dd-item-name">'+d.title+'</span><span class="ch-dd-item-check">✓</span></button>';
+  }
+  menu.innerHTML=h;
+}
+
+function buildChartDots(){
+  var el=document.getElementById('chDots');
+  if(!el)return;
+  var h='';
+  for(var i=0;i<CHART_DEFS.length;i++){
+    h+='<button class="ch-dot'+(i===chartIdx?' act':'')+'" onclick="selectChart('+i+')" aria-label="Gráfico '+(i+1)+'"><span class="ch-dot-progress'+(i===chartIdx&&chartRotateOn?' run':'')+'"></span></button>';
+  }
+  h+='<span class="ch-dots-count">'+(chartIdx+1)+' / '+CHART_DEFS.length+'</span>';
+  el.innerHTML=h;
+}
+
+function showChart(idx){
+  chartIdx=Math.max(0,Math.min(idx,CHART_DEFS.length-1));
+  var d=CHART_DEFS[chartIdx];
   var client=document.getElementById('clientSelect').value;
-  var titleSuffix=client!=='all'?' — '+client:'';
-  // refresh chart colors to match theme
+  var clientSuffix=client!=='all'?' — '+client:'';
+
+  // refresh theme colors
   var isLight=document.documentElement.getAttribute('data-theme')==='light';
   GR=isLight?'rgba(0,0,0,.06)':'rgba(255,255,255,.04)';
   TK=isLight?'#6a6a78':'#5a5a68';
 
-  el.innerHTML=''
-    +'<div class="ch-card"><div class="ch-t">Status Geral'+titleSuffix+'</div><div class="leg" id="lg1"></div><div class="ch-canvas"><canvas id="c1"></canvas></div></div>'
-    +'<div class="ch-card"><div class="ch-t">Por Tipo'+titleSuffix+'</div><div class="leg" id="lg2"></div><div class="ch-canvas"><canvas id="c2"></canvas></div></div>'
-    +'<div class="ch-card"><div class="ch-t">Top 12 Segmentos'+titleSuffix+'</div><div class="ch-canvas"><canvas id="c3"></canvas></div></div>'
-    +'<div class="ch-card"><div class="ch-t">Sync por Tipo'+titleSuffix+'</div><div class="leg" id="lg4"></div><div class="ch-canvas"><canvas id="c4"></canvas></div></div>'
-    +'<div class="ch-card full"><div class="ch-t">Distribuição — Dias Offline'+titleSuffix+'</div><div class="ch-canvas short"><canvas id="c5"></canvas></div></div>'
-    +'<div class="ch-card full"><div class="ch-t">Top 15 Organizações por Players Offline'+titleSuffix+'</div><div class="ch-canvas"><canvas id="c6"></canvas></div></div>';
+  document.getElementById('chTitle').textContent=d.title+clientSuffix;
+  document.getElementById('chDesc').textContent=d.desc;
+  document.getElementById('chDdNum').textContent=(chartIdx+1);
+  document.getElementById('chDdName').textContent=d.title;
 
-  var on=0,w=0,cr=0;for(var i=0;i<list.length;i++){var o=oc(list[i]);if(o==='on')on++;else if(o==='ow')w++;else cr++;}
+  // Destruir todos os charts antigos antes de renderizar o novo
+  for(var k in chts){dc(k);}
 
-  dc('c1');mkL('lg1',[{c:'#00D68F',l:'Online',v:on},{c:'#FFBE21',l:'<'+aCfg.days+'d',v:w},{c:'#FF4757',l:'>'+aCfg.days+'d',v:cr}]);
-  chts.c1=new Chart(document.getElementById('c1'),{type:'doughnut',data:{labels:['Online','<'+aCfg.days+'d','>'+aCfg.days+'d'],datasets:[{data:[on,w,cr],backgroundColor:['#00D68F','#FFBE21','#FF4757'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){var t2=on+w+cr;return c.label+': '+c.raw+' ('+Math.round(c.raw/t2*100)+'%)';}}}}}});
+  // Atualiza dropdown
+  var items=document.querySelectorAll('.ch-dd-item');
+  for(var i=0;i<items.length;i++)items[i].classList.toggle('act',i===chartIdx);
+  buildChartDots();
 
-  var ts=['PDM','DS','Outro'],tC={PDM:'#3B86F7',DS:'#00D68F',Outro:'#76768a'};
-  dc('c2');mkL('lg2',ts.map(function(t){return{c:tC[t],l:t,v:list.filter(function(p){return p.tipo===t;}).length};}));
-  chts.c2=new Chart(document.getElementById('c2'),{type:'doughnut',data:{labels:ts,datasets:[{data:ts.map(function(t){return list.filter(function(p){return p.tipo===t;}).length;}),backgroundColor:ts.map(function(t){return tC[t];}),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false}}}});
-
-  var sm={};for(var s=0;s<list.length;s++){if(list[s].segmento)sm[list[s].segmento]=(sm[list[s].segmento]||0)+1;}
-  var seg=Object.keys(sm).map(function(k){return[k,sm[k]];}).sort(function(a,b){return b[1]-a[1];}).slice(0,12);
-  dc('c3');chts.c3=new Chart(document.getElementById('c3'),{type:'bar',data:{labels:seg.map(function(s){return s[0];}),datasets:[{data:seg.map(function(s){return s[1];}),backgroundColor:'#3B86F7',borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:GR},ticks:{color:TK}},y:{grid:{color:GR},ticks:{color:TK,font:{size:10}}}}}});
-
-  var atD=ts.map(function(t){return list.filter(function(p){return p.tipo===t&&p.statusSync==='Atualizado';}).length;});
-  var deD=ts.map(function(t){return list.filter(function(p){return p.tipo===t&&p.statusSync==='Desatualizado';}).length;});
-  dc('c4');mkL('lg4',[{c:'#3B86F7',l:'Atualizado',v:atD.reduce(function(a,b){return a+b;},0)},{c:'#FFBE21',l:'Desatualizado',v:deD.reduce(function(a,b){return a+b;},0)}]);
-  chts.c4=new Chart(document.getElementById('c4'),{type:'bar',data:{labels:ts,datasets:[{label:'At',data:atD,backgroundColor:'#3B86F7',borderRadius:4,borderSkipped:false},{label:'Des',data:deD,backgroundColor:'#FFBE21',borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{stacked:true,grid:{color:GR},ticks:{color:TK}},y:{stacked:true,grid:{color:GR},ticks:{color:TK}}}}});
-
-  var bk=[{l:'Hoje',a:0,b:0},{l:'1d',a:1,b:1},{l:'2-6d',a:2,b:6},{l:'7-14d',a:7,b:14},{l:'15-30d',a:15,b:30},{l:'31-90d',a:31,b:90},{l:'90+d',a:91,b:9999}];
-  var off=list.filter(function(p){return !p.isConnected&&p.diasOffline!=null;});
-  dc('c5');chts.c5=new Chart(document.getElementById('c5'),{type:'bar',data:{labels:bk.map(function(b){return b.l;}),datasets:[{data:bk.map(function(b){return off.filter(function(p){return p.diasOffline>=b.a&&p.diasOffline<=b.b;}).length;}),backgroundColor:bk.map(function(b){return b.b<aCfg.days?'#FFBE21':'#FF4757';}),borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:GR},ticks:{color:TK}},y:{grid:{color:GR},ticks:{color:TK}}}}});
-
-  var orgMap={};for(var j=0;j<list.length;j++){var nm=list[j].orgName;if(!orgMap[nm])orgMap[nm]={on:0,off:0};if(oc(list[j])==='on')orgMap[nm].on++;else orgMap[nm].off++;}
-  var topOrgs=Object.keys(orgMap).map(function(k){return{name:k,on:orgMap[k].on,off:orgMap[k].off};}).sort(function(a,b){return b.off-a.off;}).slice(0,15);
-  dc('c6');chts.c6=new Chart(document.getElementById('c6'),{type:'bar',data:{labels:topOrgs.map(function(o){return o.name;}),datasets:[{label:'Online',data:topOrgs.map(function(o){return o.on;}),backgroundColor:'#00D68F',borderRadius:4,borderSkipped:false},{label:'Offline',data:topOrgs.map(function(o){return o.off;}),backgroundColor:'#FF4757',borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:true,position:'top',labels:{color:TK,boxWidth:10,font:{size:10}}}},scales:{x:{stacked:true,grid:{color:GR},ticks:{color:TK}},y:{stacked:true,grid:{color:GR},ticks:{color:TK,font:{size:9}}}}}});
+  // Render o gráfico correto
+  var body=document.getElementById('chBody');
+  var fn=CHART_RENDERERS[chartIdx];
+  if(fn)fn(body,chartLastList);
 }
+
+function selectChart(idx){
+  chartIdx=idx;
+  closeChartDd();
+  showChart(idx);
+  if(chartRotateOn&&mode==='charts')startChartRotation();
+}
+
+function nextChart(){selectChart((chartIdx+1)%CHART_DEFS.length);}
+function prevChart(){selectChart((chartIdx-1+CHART_DEFS.length)%CHART_DEFS.length);}
+
+function startChartRotation(){
+  stopChartRotation();
+  chartRotateTimer=setInterval(function(){
+    selectChart((chartIdx+1)%CHART_DEFS.length);
+  },CHART_ROTATE_MS);
+}
+function stopChartRotation(){
+  if(chartRotateTimer){clearInterval(chartRotateTimer);chartRotateTimer=null;}
+}
+
+function toggleChartRotation(){
+  chartRotateOn=!chartRotateOn;
+  var rot=document.getElementById('chRot'),btn=document.getElementById('chRotBtn'),txt=document.getElementById('chRotTxt1');
+  if(chartRotateOn){
+    rot.classList.add('on');
+    btn.textContent='⏸';btn.setAttribute('aria-label','Pausar rotação');
+    txt.textContent='Rotação ativa';
+    if(mode==='charts')startChartRotation();
+    buildChartDots();
+  }else{
+    rot.classList.remove('on');
+    btn.textContent='▶';btn.setAttribute('aria-label','Iniciar rotação');
+    txt.textContent='Rotação pausada';
+    stopChartRotation();
+    buildChartDots();
+  }
+}
+
+function toggleChartDd(ev){
+  if(ev)ev.stopPropagation();
+  document.getElementById('chDd').classList.toggle('open');
+}
+function closeChartDd(){
+  var el=document.getElementById('chDd');
+  if(el)el.classList.remove('open');
+}
+document.addEventListener('click',function(e){
+  var dd=document.getElementById('chDd');
+  if(dd&&dd.classList.contains('open')&&!dd.contains(e.target))closeChartDd();
+});
+
+// ─────── Helpers de legenda ───────
+function legColor(cls){return cls==='g'?'#00D68F':cls==='a'?'#FFBE21':cls==='r'?'#FF4757':cls==='b'?'#3B86F7':'#76768a';}
+function legCard(cls,name,num,total){
+  var pct=total?(Math.round(num/total*1000)/10).toString().replace('.',','):'0';
+  return '<div class="ch-leg-card '+cls+'">'+
+    '<div class="ch-leg-top"><div class="ch-leg-dot" style="background:'+legColor(cls)+'"></div><div class="ch-leg-name">'+name+'</div></div>'+
+    '<div class="ch-leg-vals"><div class="ch-leg-num">'+num+'</div><div class="ch-leg-pct">'+pct+'%</div></div>'+
+    '</div>';
+}
+function legCardColor(cls,color,name,num,total){
+  var pct=total?(Math.round(num/total*1000)/10).toString().replace('.',','):'0';
+  return '<div class="ch-leg-card '+cls+'">'+
+    '<div class="ch-leg-top"><div class="ch-leg-dot" style="background:'+color+'"></div><div class="ch-leg-name">'+name+'</div></div>'+
+    '<div class="ch-leg-vals"><div class="ch-leg-num">'+num+'</div><div class="ch-leg-pct">'+pct+'%</div></div>'+
+    '</div>';
+}
+
+function chartCommonOpts(extra){
+  var base={
+    responsive:true,maintainAspectRatio:false,
+    plugins:{
+      legend:{display:false},
+      tooltip:{
+        backgroundColor:'rgba(20,20,28,.95)',
+        titleColor:'#fff',bodyColor:'#e8e8ec',
+        borderColor:'rgba(255,255,255,.12)',borderWidth:1,
+        padding:10,cornerRadius:6,
+        titleFont:{size:13,weight:'600'},bodyFont:{size:12}
+      }
+    }
+  };
+  if(extra){for(var k in extra)base[k]=extra[k];}
+  return base;
+}
+
+CHART_RENDERERS=[
+  // 0 — Status Geral (donut + 3 cards)
+  function(body,list){
+    var on=0,w=0,cr=0,t=list.length;
+    for(var i=0;i<t;i++){var o=oc(list[i]);if(o==='on')on++;else if(o==='ow')w++;else cr++;}
+    body.classList.remove('wide');
+    body.innerHTML='<div class="ch-canvas-wrap"><canvas id="c1"></canvas><div class="ch-donut-center"><div class="ch-donut-num">'+t+'</div><div class="ch-donut-lbl">PLAYERS</div></div></div>'+
+      '<div class="ch-leg">'+
+      legCard('g','Online',on,t)+
+      legCard('a','Offline < '+aCfg.days+' dias',w,t)+
+      legCard('r','Offline > '+aCfg.days+' dias',cr,t)+
+      '</div>';
+    chts.c1=new Chart(document.getElementById('c1'),{
+      type:'doughnut',
+      data:{labels:['Online','<'+aCfg.days+'d','>'+aCfg.days+'d'],datasets:[{data:[on,w,cr],backgroundColor:['#00D68F','#FFBE21','#FF4757'],borderWidth:0,hoverOffset:8}]},
+      options:chartCommonOpts({cutout:'70%'})
+    });
+  },
+  // 1 — Por Tipo (donut + cards)
+  function(body,list){
+    var ts=['PDM','DS','Outro'],tC={PDM:'#3B86F7',DS:'#00D68F',Outro:'#76768a'};
+    var counts=ts.map(function(t){return list.filter(function(p){return p.tipo===t;}).length;});
+    var total=counts.reduce(function(a,b){return a+b;},0);
+    body.classList.remove('wide');
+    var cards='';
+    for(var i=0;i<ts.length;i++){
+      var cls=ts[i]==='PDM'?'b':ts[i]==='DS'?'g':'n';
+      cards+=legCardColor(cls,tC[ts[i]],ts[i],counts[i],total);
+    }
+    body.innerHTML='<div class="ch-canvas-wrap"><canvas id="c2"></canvas><div class="ch-donut-center"><div class="ch-donut-num">'+total+'</div><div class="ch-donut-lbl">PLAYERS</div></div></div>'+
+      '<div class="ch-leg">'+cards+'</div>';
+    chts.c2=new Chart(document.getElementById('c2'),{
+      type:'doughnut',
+      data:{labels:ts,datasets:[{data:counts,backgroundColor:ts.map(function(t){return tC[t];}),borderWidth:0,hoverOffset:8}]},
+      options:chartCommonOpts({cutout:'70%'})
+    });
+  },
+  // 2 — Top 12 Segmentos (barras horizontais, wide)
+  function(body,list){
+    var sm={};for(var s=0;s<list.length;s++){if(list[s].segmento)sm[list[s].segmento]=(sm[list[s].segmento]||0)+1;}
+    var seg=Object.keys(sm).map(function(k){return[k,sm[k]];}).sort(function(a,b){return b[1]-a[1];}).slice(0,12);
+    body.classList.add('wide');
+    body.innerHTML='<div class="ch-canvas-wrap"><canvas id="c3"></canvas></div>';
+    chts.c3=new Chart(document.getElementById('c3'),{
+      type:'bar',
+      data:{labels:seg.map(function(s){return s[0];}),datasets:[{data:seg.map(function(s){return s[1];}),backgroundColor:'#3B86F7',borderRadius:6,borderSkipped:false}]},
+      options:chartCommonOpts({
+        indexAxis:'y',
+        scales:{
+          x:{grid:{color:GR},ticks:{color:TK,font:{size:12}}},
+          y:{grid:{color:'transparent'},ticks:{color:TK,font:{size:12,weight:'500'}}}
+        }
+      })
+    });
+  },
+  // 3 — Sync por Tipo (barras empilhadas verticais + cards)
+  function(body,list){
+    var ts=['PDM','DS','Outro'];
+    var atD=ts.map(function(t){return list.filter(function(p){return p.tipo===t&&p.statusSync==='Atualizado';}).length;});
+    var deD=ts.map(function(t){return list.filter(function(p){return p.tipo===t&&p.statusSync==='Desatualizado';}).length;});
+    var totalAt=atD.reduce(function(a,b){return a+b;},0),totalDe=deD.reduce(function(a,b){return a+b;},0);
+    var total=totalAt+totalDe;
+    body.classList.remove('wide');
+    body.innerHTML='<div class="ch-canvas-wrap"><canvas id="c4"></canvas></div>'+
+      '<div class="ch-leg">'+
+      legCardColor('b','#3B86F7','Atualizado',totalAt,total)+
+      legCardColor('a','#FFBE21','Desatualizado',totalDe,total)+
+      '</div>';
+    chts.c4=new Chart(document.getElementById('c4'),{
+      type:'bar',
+      data:{labels:ts,datasets:[
+        {label:'Atualizado',data:atD,backgroundColor:'#3B86F7',borderRadius:4,borderSkipped:false},
+        {label:'Desatualizado',data:deD,backgroundColor:'#FFBE21',borderRadius:4,borderSkipped:false}
+      ]},
+      options:chartCommonOpts({
+        scales:{
+          x:{stacked:true,grid:{color:'transparent'},ticks:{color:TK,font:{size:13,weight:'500'}}},
+          y:{stacked:true,grid:{color:GR},ticks:{color:TK,font:{size:12}}}
+        }
+      })
+    });
+  },
+  // 4 — Distribuição Dias Offline (barras verticais, wide)
+  function(body,list){
+    var bk=[{l:'Hoje',a:0,b:0},{l:'1d',a:1,b:1},{l:'2-6d',a:2,b:6},{l:'7-14d',a:7,b:14},{l:'15-30d',a:15,b:30},{l:'31-90d',a:31,b:90},{l:'90+d',a:91,b:9999}];
+    var off=list.filter(function(p){return !p.isConnected&&p.diasOffline!=null;});
+    body.classList.add('wide');
+    body.innerHTML='<div class="ch-canvas-wrap"><canvas id="c5"></canvas></div>';
+    chts.c5=new Chart(document.getElementById('c5'),{
+      type:'bar',
+      data:{labels:bk.map(function(b){return b.l;}),datasets:[{data:bk.map(function(b){return off.filter(function(p){return p.diasOffline>=b.a&&p.diasOffline<=b.b;}).length;}),backgroundColor:bk.map(function(b){return b.b<aCfg.days?'#FFBE21':'#FF4757';}),borderRadius:6,borderSkipped:false}]},
+      options:chartCommonOpts({
+        scales:{
+          x:{grid:{color:'transparent'},ticks:{color:TK,font:{size:13,weight:'500'}}},
+          y:{grid:{color:GR},ticks:{color:TK,font:{size:12}}}
+        }
+      })
+    });
+  },
+  // 5 — Top 15 Organizações (barras horizontais empilhadas, wide)
+  function(body,list){
+    var orgMap={};
+    for(var j=0;j<list.length;j++){var nm=list[j].orgName;if(!orgMap[nm])orgMap[nm]={on:0,off:0};if(oc(list[j])==='on')orgMap[nm].on++;else orgMap[nm].off++;}
+    var topOrgs=Object.keys(orgMap).map(function(k){return{name:k,on:orgMap[k].on,off:orgMap[k].off};}).sort(function(a,b){return b.off-a.off;}).slice(0,15);
+    body.classList.add('wide');
+    body.innerHTML='<div class="ch-canvas-wrap"><canvas id="c6"></canvas></div>';
+    chts.c6=new Chart(document.getElementById('c6'),{
+      type:'bar',
+      data:{labels:topOrgs.map(function(o){return o.name;}),datasets:[
+        {label:'Online',data:topOrgs.map(function(o){return o.on;}),backgroundColor:'#00D68F',borderRadius:4,borderSkipped:false},
+        {label:'Offline',data:topOrgs.map(function(o){return o.off;}),backgroundColor:'#FF4757',borderRadius:4,borderSkipped:false}
+      ]},
+      options:chartCommonOpts({
+        indexAxis:'y',
+        plugins:{
+          legend:{display:true,position:'top',align:'end',labels:{color:TK,boxWidth:14,boxHeight:10,padding:14,font:{size:12,weight:'500'}}},
+          tooltip:{backgroundColor:'rgba(20,20,28,.95)',titleColor:'#fff',bodyColor:'#e8e8ec',borderColor:'rgba(255,255,255,.12)',borderWidth:1,padding:10,cornerRadius:6,titleFont:{size:13,weight:'600'},bodyFont:{size:12}}
+        },
+        scales:{
+          x:{stacked:true,grid:{color:GR},ticks:{color:TK,font:{size:12}}},
+          y:{stacked:true,grid:{color:'transparent'},ticks:{color:TK,font:{size:11,weight:'500'}}}
+        }
+      })
+    });
+  }
+];
+
 
 // ─────── Map ───────
 function getMapTiles(){return document.documentElement.getAttribute('data-theme')==='light'
@@ -1347,9 +1803,16 @@ function downloadExcel(){
 
 // ─────── Keyboard + Init ───────
 document.addEventListener('keydown',function(e){
-  if(e.key==='Escape'){closeDw();closeAlerts();closeSettings();}
-  if(e.key==='f'&&!e.ctrlKey&&!e.metaKey&&document.activeElement.tagName!=='INPUT'){e.preventDefault();document.getElementById('sSearch').focus();}
-  if(e.key==='r'&&!e.ctrlKey&&!e.metaKey&&document.activeElement.tagName!=='INPUT'){e.preventDefault();doRefresh();}
+  if(e.key==='Escape'){closeDw();closeAlerts();closeSettings();closeChartDd();}
+  var inInput=document.activeElement.tagName==='INPUT'||document.activeElement.tagName==='TEXTAREA';
+  if(e.key==='f'&&!e.ctrlKey&&!e.metaKey&&!inInput){e.preventDefault();document.getElementById('sSearch').focus();}
+  if(e.key==='r'&&!e.ctrlKey&&!e.metaKey&&!inInput){e.preventDefault();doRefresh();}
+  // Atalhos do modo gráficos
+  if(mode==='charts'&&!inInput){
+    if(e.key==='ArrowRight'){e.preventDefault();nextChart();}
+    if(e.key==='ArrowLeft'){e.preventDefault();prevChart();}
+    if(e.key===' '){e.preventDefault();toggleChartRotation();}
+  }
 });
 
 loadUiCfg();loadACfg();loadAll();
